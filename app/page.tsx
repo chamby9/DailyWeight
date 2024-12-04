@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useRef } from 'react';
-import WeightForm from './components/WeightForm';
-import WeightChart, { WeightChartRef } from './components/WeightChart';
+import WeightForm from '@/components/WeightForm';
+import WeightChart, { WeightChartRef } from '@/components/WeightChart';
 
 const HomePage: React.FC = () => {
   const chartRef = useRef<WeightChartRef>(null);
