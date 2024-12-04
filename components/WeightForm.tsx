@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import type { WeightEntry } from '@/lib/supabase';
 
 interface WeightFormProps {
   onWeightAdded: () => void;
