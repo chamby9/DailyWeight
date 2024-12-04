@@ -11,6 +11,7 @@ import {
   Title,
   Tooltip,
   Legend,
+  ChartOptions,
 } from 'chart.js';
 
 ChartJS.register(
@@ -92,7 +93,7 @@ const WeightChart = forwardRef<WeightChartRef>((props, ref) => {
     ],
   };
 
-  const options = {
+  const options: ChartOptions<'line'> = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -106,11 +107,21 @@ const WeightChart = forwardRef<WeightChartRef>((props, ref) => {
     },
     scales: {
       y: {
+        type: 'linear' as const,
         beginAtZero: false,
         ticks: {
-          callback: (value: number) => `${value} kg`,
-        },
+          callback: function(value) {
+            return `${value} kg`;
+          }
+        }
       },
+      x: {
+        type: 'category' as const,
+        ticks: {
+          maxRotation: 45,
+          minRotation: 45
+        }
+      }
     },
   };
 
