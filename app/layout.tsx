@@ -21,21 +21,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html lang="en" data-theme="weightLight">
+      <body className={`${inter.className} min-h-screen bg-base-100`}>
         <ThemeProvider>
-          <div className="min-h-screen bg-base-100 text-base-content">
-            <header className="navbar bg-base-200">
-              <div className="flex-1">
-                <Link href="/" className="btn btn-ghost text-xl">
+          <div className="min-h-screen">
+            <header className="navbar bg-base-200 shadow-md">
+              <div className="flex-1 px-4">
+                <Link href="/" className="btn btn-ghost text-xl normal-case">
                   DailyWeight
                 </Link>
               </div>
-              <div className="flex-none">
+              <div className="flex-none px-4">
                 <ThemeSwitcher />
               </div>
             </header>
-            <main className="container mx-auto px-4 py-8">
+            <main className="container mx-auto p-4 md:p-8">
               {children}
             </main>
           </div>
