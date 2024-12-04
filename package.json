@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.46.2",
     "chart.js": "^4.4.7",
     "daisyui": "^4.12.14",
     "geist": "^1.3.1",
