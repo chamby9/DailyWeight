@@ -15,17 +15,26 @@ const HomePage: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold mb-8">DailyWeight</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Add Weight Entry</h2>
-          <WeightForm onWeightAdded={handleAddWeight} />
-        </div>
+    <div className="min-h-screen bg-base-200 p-4">
+      <div className="max-w-6xl mx-auto">
+        <h1 className="text-4xl font-bold mb-8 text-primary">DailyWeight</h1>
         
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Weight History</h2>
-          <WeightChart ref={chartRef} />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Weight Entry Card */}
+          <div className="card bg-base-100 shadow-xl">
+            <div className="card-body">
+              <h2 className="card-title text-xl mb-4">Add Weight Entry</h2>
+              <WeightForm onWeightAdded={handleAddWeight} />
+            </div>
+          </div>
+          
+          {/* Weight History Card */}
+          <div className="card bg-base-100 shadow-xl">
+            <div className="card-body">
+              <h2 className="card-title text-xl mb-4">Weight History</h2>
+              <WeightChart ref={chartRef} />
+            </div>
+          </div>
         </div>
       </div>
     </div>
