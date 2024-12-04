@@ -1,15 +1,35 @@
 'use client';
 
-import { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import type { WeightEntry } from '@/lib/supabase';
+import React, { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
+import { Line } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  ChartOptions,
+} from 'chart.js';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 export interface WeightChartRef {
   fetchWeights: () => Promise<void>;
 }
 
 const WeightChart = forwardRef<WeightChartRef>((props, ref) => {
-  const [weights, setWeights] = useState<WeightEntry[]>([]);
+  const [weights, setWeights] = useState<{ date: string; weight: number }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -57,33 +77,57 @@ const WeightChart = forwardRef<WeightChartRef>((props, ref) => {
     </div>
   );
 
+  const data = {
+    labels: weights.map(entry => new Date(entry.date).toLocaleDateString()),
+    datasets: [
+      {
+        label: 'Weight (kg)',
+        data: weights.map(entry => entry.weight),
+        borderColor: 'rgb(59, 130, 246)',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        borderWidth: 2,
+        tension: 0.1,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+      },
+    ],
+  };
+
+  const options: ChartOptions<'line'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+      },
+      title: {
+        display: true,
+        text: 'Weight History',
+      },
+    },
+    scales: {
+      y: {
+        type: 'linear' as const,
+        beginAtZero: false,
+        ticks: {
+          callback: function(value) {
+            return `${value} kg`;
+          }
+        }
+      },
+      x: {
+        type: 'category' as const,
+        ticks: {
+          maxRotation: 45,
+          minRotation: 45
+        }
+      }
+    },
+  };
+
   return (
     <div className="h-96 w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={weights}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis 
-            dataKey="date" 
-            tickFormatter={(date) => new Date(date).toLocaleDateString()}
-          />
-          <YAxis 
-            domain={['auto', 'auto']}
-            label={{ value: 'Weight (kg)', angle: -90, position: 'insideLeft' }}
-          />
-          <Tooltip 
-            labelFormatter={(date) => new Date(date).toLocaleDateString()}
-            formatter={(value) => [`${value} kg`, 'Weight']}
-          />
-          <Line
-            type="monotone"
-            dataKey="weight"
-            stroke="#2563eb"
-            strokeWidth={2}
-            dot={{ r: 4 }}
-            activeDot={{ r: 6 }}
-          />
-        </LineChart>
-      </ResponsiveContainer>
+      <Line options={options} data={data} />
     </div>
   );
 });
