@@ -1,33 +1,14 @@
 import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import type { Database } from '@/types/database';
 
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
 
   try {
-    // Create client with correct params
     const supabase = createMiddlewareClient<Database>(
-      {
-        cookies: () => {
-          // Create an object that implements the CookieStore interface
-          let cookies = new Map<string, string>();
-          req.cookies.getAll().forEach(cookie => {
-            cookies.set(cookie.name, cookie.value);
-          });
-          return {
-            get: (name: string) => cookies.get(name) ?? null,
-            // Add the other required methods but we don't need them
-            getAll: () => [...cookies.entries()].map(([name, value]) => ({ name, value })),
-            set: () => { },
-            delete: () => { },
-          };
-        },
-      },
-      {
-        url: process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        key: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      }
+      { req, res }
     );
 
     const {
