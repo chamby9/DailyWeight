@@ -7,9 +7,10 @@ export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
 
   try {
-    const supabase = createMiddlewareClient<Database>(
-      { req, res }
-    );
+    const supabase = createMiddlewareClient<Database>({ req, res });
+
+    // This is key - we need to refresh the session if needed
+    await supabase.auth.getSession();
 
     const {
       data: { session },
