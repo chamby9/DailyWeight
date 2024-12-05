@@ -1,23 +1,4 @@
-'use client';
-
-import { useAuth } from '@/contexts/AuthContext';
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-
 export default function LandingPage() {
-  const { user, loading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!loading && user) {
-      router.push('/dashboard');
-    }
-  }, [user, loading, router]);
-
-  if (loading) return null;
-  if (user) return null;
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
       {/* Navigation */}
@@ -30,18 +11,18 @@ export default function LandingPage() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <Link 
+              <a 
                 href="/auth/login"
                 className="text-gray-600 hover:text-gray-900"
               >
                 Sign in
-              </Link>
-              <Link
+              </a>
+              <a
                 href="/auth/signup"
                 className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
               >
                 Get Started
-              </Link>
+              </a>
             </div>
           </div>
         </div>
@@ -56,15 +37,14 @@ export default function LandingPage() {
           </h1>
           <p className="mt-3 max-w-md mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
             Simple, effective weight tracking to help you stay motivated and reach your fitness goals.
-            Monitor your progress, visualize your journey, and celebrate your success.
           </p>
           <div className="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
-            <Link
+            <a
               href="/auth/signup"
               className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10"
             >
               Start Tracking Now
-            </Link>
+            </a>
           </div>
         </div>
       </div>
@@ -112,24 +92,6 @@ export default function LandingPage() {
               </p>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* CTA Section */}
-      <div className="bg-blue-600">
-        <div className="max-w-2xl mx-auto text-center py-16 px-4 sm:py-20 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-extrabold text-white sm:text-4xl">
-            <span className="block">Ready to start your journey?</span>
-          </h2>
-          <p className="mt-4 text-lg leading-6 text-blue-100">
-            Join thousands of others who are achieving their weight goals with DailyWeight.
-          </p>
-          <Link
-            href="/auth/signup"
-            className="mt-8 w-full inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-blue-600 bg-white hover:bg-blue-50 sm:w-auto"
-          >
-            Get Started for Free
-          </Link>
         </div>
       </div>
     </div>
