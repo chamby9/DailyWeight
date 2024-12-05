@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import type { WeightEntry } from '@/lib/supabase';
+import type { WeightEntry } from '@/types/database.types';
 
 export async function POST(request: Request) {
   try {
