@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import type { AuthError } from '@supabase/supabase-js';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -18,16 +19,17 @@ export default function Login() {
     setError(null);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) throw error;
+      if (authError) throw authError;
       router.push('/dashboard');
       router.refresh();
-    } catch (error: any) {
-      setError(error.message);
+    } catch (error) {
+      const authError = error as AuthError;
+      setError(authError.message);
     } finally {
       setLoading(false);
     }
@@ -90,7 +92,7 @@ export default function Login() {
 
           <div className="text-center">
             <Link href="/auth/signup" className="link link-primary">
-              Don't have an account? Sign up
+              Don&apos;t have an account? Sign up
             </Link>
           </div>
         </form>
