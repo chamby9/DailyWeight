@@ -3,6 +3,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { signOut } from '@/utils/auth';
 
 export default function DashboardLayout({
   children,
@@ -30,6 +31,15 @@ export default function DashboardLayout({
     return null;
   }
 
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      router.push('/auth/login');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm">
@@ -42,7 +52,7 @@ export default function DashboardLayout({
             </div>
             <div className="flex items-center">
               <button
-                onClick={() => signOut()}
+                onClick={handleSignOut}
                 className="ml-4 px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
               >
                 Sign out
