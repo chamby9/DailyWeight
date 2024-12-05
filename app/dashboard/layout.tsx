@@ -1,7 +1,6 @@
 "use client";
 
 import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { signOut } from '@/utils/auth';
 
@@ -11,7 +10,6 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const { user, loading } = useAuth();
-  const router = useRouter();
   const [isSigningOut, setIsSigningOut] = useState(false);
 
   useEffect(() => {
