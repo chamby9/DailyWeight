@@ -1,23 +1,19 @@
 import { createClient } from '@supabase/supabase-js';
+import type { Database } from '@/types/database.types';
 
 if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-  throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL environment variable');
+  throw new Error('Missing env.NEXT_PUBLIC_SUPABASE_URL');
 }
-
 if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-  throw new Error('Missing NEXT_PUBLIC_SUPABASE_ANON_KEY environment variable');
+  throw new Error('Missing env.NEXT_PUBLIC_SUPABASE_ANON_KEY');
 }
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-// Types for weight entries following our database schema
-export interface WeightEntry {
-  id?: number;
-  user_id: string;
-  date: string;
-  weight: number;
-  created_at?: string;
-}
+export const supabase = createClient<Database>(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  {
+    auth: {
+      persistSession: true,
+    },
+  }
+);
