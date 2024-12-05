@@ -7,7 +7,7 @@ export async function signOut() {
 
 export async function resetPassword(email: string) {
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${window.location.origin}/auth/update-password`,
+    redirectTo: `${window.location.origin}/auth/callback`,
   });
   if (error) throw error;
 }
