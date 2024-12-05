@@ -1,43 +1,34 @@
-import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
 export async function middleware(req: NextRequest) {
-  const res = NextResponse.next()
-  const supabase = createMiddlewareClient({ req, res })
+  const res = NextResponse.next();
+  const supabase = createMiddlewareClient({ req, res });
 
   const {
     data: { session },
-  } = await supabase.auth.getSession()
+  } = await supabase.auth.getSession();
 
-  // Protect routes that require authentication
-  if (!session && (
-    req.nextUrl.pathname.startsWith('/dashboard') ||
-    req.nextUrl.pathname.startsWith('/weight')
-  )) {
-    const redirectUrl = req.nextUrl.clone()
-    redirectUrl.pathname = '/auth/login'
-    redirectUrl.searchParams.set('redirectedFrom', req.nextUrl.pathname)
-    return NextResponse.redirect(redirectUrl)
+  // Handle authentication routes
+  if (session) {
+    // If user is signed in, redirect away from auth pages
+    if (req.nextUrl.pathname.startsWith('/auth/')) {
+      return NextResponse.redirect(new URL('/dashboard', req.url));
+    }
+  } else {
+    // If user is not signed in, redirect to login from protected pages
+    if (
+      req.nextUrl.pathname === '/dashboard' ||
+      req.nextUrl.pathname === '/'
+    ) {
+      return NextResponse.redirect(new URL('/auth/login', req.url));
+    }
   }
 
-  // Redirect authenticated users away from auth pages
-  if (session && (
-    req.nextUrl.pathname.startsWith('/auth/login') ||
-    req.nextUrl.pathname.startsWith('/auth/signup')
-  )) {
-    const redirectUrl = req.nextUrl.clone()
-    redirectUrl.pathname = '/dashboard'
-    return NextResponse.redirect(redirectUrl)
-  }
-
-  return res
+  return res;
 }
 
 export const config = {
-  matcher: [
-    '/dashboard/:path*',
-    '/weight/:path*',
-    '/auth/:path*'
-  ],
-}
+  matcher: ['/', '/dashboard', '/auth/:path*'],
+};
