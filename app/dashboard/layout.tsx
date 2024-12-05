@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { signOut } from '@/utils/auth';
 
@@ -12,14 +12,22 @@ export default function DashboardLayout({
 }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const [isSigningOut, setIsSigningOut] = useState(false);
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.push('/auth/login');
+    // Don't redirect if we're on an auth page
+    if (pathname?.startsWith('/auth/')) {
+      return;
     }
-  }, [user, loading, router]);
 
+    // Only redirect if we're sure there's no user and loading is complete
+    if (!loading && !user) {
+      router.replace('/auth/login');
+    }
+  }, [user, loading, router, pathname]);
+
+  // Show loading state
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -28,6 +36,7 @@ export default function DashboardLayout({
     );
   }
 
+  // Don't render dashboard layout for non-authenticated users
   if (!user) {
     return null;
   }
@@ -38,7 +47,7 @@ export default function DashboardLayout({
     setIsSigningOut(true);
     try {
       await signOut();
-      router.push('/auth/login');
+      router.replace('/auth/login');
     } catch (error) {
       console.error('Error signing out:', error);
       setIsSigningOut(false);
