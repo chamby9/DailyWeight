@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { signOut } from '@/utils/auth';
 
 export default function DashboardLayout({
@@ -12,6 +12,7 @@ export default function DashboardLayout({
 }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -32,11 +33,15 @@ export default function DashboardLayout({
   }
 
   const handleSignOut = async () => {
+    if (isSigningOut) return;
+    
+    setIsSigningOut(true);
     try {
       await signOut();
       router.push('/auth/login');
     } catch (error) {
       console.error('Error signing out:', error);
+      setIsSigningOut(false);
     }
   };
 
@@ -53,9 +58,14 @@ export default function DashboardLayout({
             <div className="flex items-center">
               <button
                 onClick={handleSignOut}
-                className="ml-4 px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                disabled={isSigningOut}
+                className={`ml-4 px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white 
+                  ${isSigningOut 
+                    ? 'bg-blue-400 cursor-not-allowed' 
+                    : 'bg-blue-600 hover:bg-blue-700'
+                  }`}
               >
-                Sign out
+                {isSigningOut ? 'Signing out...' : 'Sign out'}
               </button>
             </div>
           </div>
