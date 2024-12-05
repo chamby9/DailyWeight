@@ -1,12 +1,11 @@
-import type { Metadata } from 'next'
-import { GeistSans } from 'geist/font/sans'
-import './globals.css'
-import { AuthProvider } from '@/contexts/AuthContext'
+import type { Metadata } from 'next';
+import './globals.css';
+import { AuthProvider } from '@/contexts/AuthContext';
 
 export const metadata: Metadata = {
   title: 'DailyWeight',
   description: 'Track your weight daily',
-}
+};
 
 export default function RootLayout({
   children,
@@ -15,11 +14,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={GeistSans.className}>
+      <body className="font-sans">
         <AuthProvider>
           {children}
         </AuthProvider>
       </body>
     </html>
-  )
+  );
 }
