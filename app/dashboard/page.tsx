@@ -1,13 +1,13 @@
+// app/dashboard/page.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
 import WeightEntryModal from '@/components/WeightEntryModal';
 import WeightEntries from '@/components/WeightEntries';
 
 export default function Dashboard() {
-  const { user, loading, error, signOut } = useAuth();
+  const { user, loading, error } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   
@@ -41,12 +41,6 @@ export default function Dashboard() {
             className="btn btn-primary"
           >
             Add Weight
-          </button>
-          <button 
-            onClick={() => signOut()}
-            className="btn btn-outline"
-          >
-            Sign Out
           </button>
         </div>
       </div>
