@@ -1,4 +1,3 @@
-// app/dashboard/page.tsx
 'use client';
 
 import { useState } from 'react';
@@ -7,25 +6,9 @@ import WeightEntryModal from '@/components/WeightEntryModal';
 import WeightEntries from '@/components/WeightEntries';
 
 export default function Dashboard() {
-  const { user, loading, error } = useAuth();
+  const { user } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  
-  if (loading) {
-    return <div className="flex justify-center items-center min-h-screen">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-    </div>;
-  }
-
-  if (error) {
-    return <div className="p-4 bg-red-50 text-red-700 rounded">
-      An error occurred. Please try signing in again.
-    </div>;
-  }
-
-  if (!user) {
-    return null; // Middleware will handle redirect
-  }
 
   const handleWeightAdded = () => {
     setRefreshTrigger(prev => prev + 1);
@@ -35,14 +18,12 @@ export default function Dashboard() {
     <div className="bg-white shadow rounded-lg p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Welcome!</h2>
-        <div className="flex gap-4">
-          <button 
-            onClick={() => setIsModalOpen(true)}
-            className="btn btn-primary"
-          >
-            Add Weight
-          </button>
-        </div>
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="btn btn-primary"
+        >
+          Add Weight
+        </button>
       </div>
       
       <p className="text-gray-600 mb-6">

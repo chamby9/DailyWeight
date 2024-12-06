@@ -1,14 +1,15 @@
-// app/dashboard/layout.tsx
 'use client';
 
-import { signOut } from '@/utils/auth';
+import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import { signOut } from '@/utils/auth';
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { user, loading, error } = useAuth();
   const router = useRouter();
 
   const handleSignOut = async () => {
@@ -20,17 +21,39 @@ export default function DashboardLayout({
     }
   };
 
-  return (
-    <div>
-      <div className="flex justify-end p-4">
-        <button 
-          onClick={handleSignOut}
-          className="btn btn-outline"
-        >
-          Sign Out
-        </button>
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
       </div>
-      {children}
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-4 bg-red-50 text-red-700 rounded">
+        An error occurred. Please try signing in again.
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null; // Middleware will handle redirect
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-end mb-6">
+          <button 
+            onClick={handleSignOut}
+            className="btn btn-outline"
+          >
+            Sign Out
+          </button>
+        </div>
+        {children}
+      </div>
     </div>
   );
 }
