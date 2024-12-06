@@ -9,7 +9,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user, loading, error } = useAuth();
+  const { loading, error } = useAuth();
   const router = useRouter();
 
   const handleSignOut = async () => {
