@@ -17,9 +17,11 @@ export default function WeightEntries() {
   const { user } = useAuth();
 
   const fetchEntries = async () => {
+    if (!user?.id) return;
+    
     try {
       setIsLoading(true);
-      const response = await fetch('/api/weights');
+      const response = await fetch(`/api/weights?userId=${user.id}`);
       if (!response.ok) throw new Error('Failed to fetch entries');
       
       const data = await response.json();
@@ -34,7 +36,7 @@ export default function WeightEntries() {
 
   useEffect(() => {
     fetchEntries();
-  }, []);
+  }, [user?.id]); // Re-fetch when user ID changes
 
   if (isLoading) {
     return <div className="loading loading-spinner"></div>;
