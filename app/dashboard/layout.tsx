@@ -2,25 +2,24 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { signOut } from '@/utils/auth';
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { loading, error } = useAuth();
+  const { user, loading, error, signOut } = useAuth();
   const router = useRouter();
 
   const handleSignOut = async () => {
     try {
       await signOut();
-      router.push('/auth/login');
     } catch (error) {
       console.error('Error signing out:', error);
     }
   };
 
+  // Show loading spinner while checking auth
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -29,13 +28,10 @@ export default function DashboardLayout({
     );
   }
 
-  // Let middleware handle redirects, just show error if there is one
-  if (error) {
-    return (
-      <div className="p-4 bg-red-50 text-red-700 rounded">
-        An error occurred. Please try signing in again.
-      </div>
-    );
+  // Redirect if no user or error
+  if (!user || error) {
+    router.push('/auth/login');
+    return null;
   }
 
   return (

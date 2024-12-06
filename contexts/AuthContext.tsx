@@ -4,8 +4,7 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
-import { markAuthStateAsChecked, hasAuthStateBeenChecked, clearAuthState } from '@/utils/auth';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 type AuthContextType = {
   user: User | null;
@@ -23,15 +22,16 @@ const AuthContext = createContext<AuthContextType>({
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(!hasAuthStateBeenChecked());
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const router = useRouter();
-  const pathname = usePathname();
 
   const signOut = useCallback(async () => {
     try {
       await supabase.auth.signOut();
-      clearAuthState();
+      setUser(null);
+      // Clear any local storage if needed
+      localStorage.removeItem('supabase.auth.token');
       router.push('/auth/login');
     } catch (error) {
       console.error('Error signing out:', error);
@@ -42,8 +42,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    const checkSession = async () => {
+    // Get initial session
+    const initializeAuth = async () => {
       try {
+        // Check for existing session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) throw sessionError;
@@ -51,18 +53,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (mounted) {
           if (session?.user) {
             setUser(session.user);
-          } else if (pathname.startsWith('/dashboard')) {
-            router.push('/auth/login');
           }
-          markAuthStateAsChecked();
+          setError(null);
         }
       } catch (err) {
         if (mounted) {
-          console.error('Session check error:', err);
-          setError(err instanceof Error ? err : new Error('Session check failed'));
-          if (pathname.startsWith('/dashboard')) {
-            router.push('/auth/login');
-          }
+          console.error('Auth initialization error:', err);
+          setError(err instanceof Error ? err : new Error('Authentication failed'));
+          setUser(null);
         }
       } finally {
         if (mounted) {
@@ -71,29 +69,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    checkSession();
+    initializeAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    // Subscribe to auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
 
-      if (event === 'SIGNED_OUT') {
-        setUser(null);
-        clearAuthState();
-        if (pathname.startsWith('/dashboard')) {
-          router.push('/auth/login');
+      try {
+        if (event === 'SIGNED_IN') {
+          setUser(session?.user ?? null);
+          setError(null);
+        } else if (event === 'SIGNED_OUT') {
+          setUser(null);
+          setError(null);
+        } else if (event === 'USER_UPDATED') {
+          setUser(session?.user ?? null);
+          setError(null);
         }
-      } else if (session?.user) {
-        setUser(session.user);
-        markAuthStateAsChecked();
+      } catch (err) {
+        console.error('Auth state change error:', err);
+        setError(err instanceof Error ? err : new Error('Auth state change failed'));
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
+    // Cleanup
     return () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [pathname, router]);
+  }, []);
 
   const value = {
     user,
