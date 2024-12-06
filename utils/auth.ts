@@ -1,43 +1,12 @@
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import type { Database } from '@/types/database';
+let authStateChecked = false;
 
-export async function signOut() {
-  const supabase = createClientComponentClient<Database>();
-  
-  try {
-    // Sign out from Supabase
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
-    
-    // Clear any cached auth state
-    await supabase.auth.getSession();
-    
-    // Force clear cookies and local storage
-    document.cookie.split(";").forEach((c) => {
-      document.cookie = c
-        .replace(/^ +/, "")
-        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-    });
-    localStorage.clear();
-    
-  } catch (error) {
-    console.error('Error in signOut:', error);
-    throw error;
-  }
-}
+export const markAuthStateAsChecked = () => {
+  authStateChecked = true;
+};
 
-export async function resetPassword(email: string) {
-  const supabase = createClientComponentClient<Database>();
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${window.location.origin}/auth/callback`,
-  });
-  if (error) throw error;
-}
+export const hasAuthStateBeenChecked = () => {
+  return authStateChecked;
+};
 
-export async function updatePassword(password: string) {
-  const supabase = createClientComponentClient<Database>();
-  const { error } = await supabase.auth.updateUser({
-    password,
-  });
-  if (error) throw error;
-}
+export const clearAuthState = () => {
+  localStorage.removeItem('su
