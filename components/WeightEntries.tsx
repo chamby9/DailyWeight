@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface WeightEntry {
@@ -16,7 +16,7 @@ export default function WeightEntries() {
   const [error, setError] = useState('');
   const { user } = useAuth();
 
-  const fetchEntries = async () => {
+  const fetchEntries = useCallback(async () => {
     if (!user?.id) return;
     
     try {
@@ -32,11 +32,11 @@ export default function WeightEntries() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user?.id]);
 
   useEffect(() => {
     fetchEntries();
-  }, [user?.id]); // Re-fetch when user ID changes
+  }, [fetchEntries]);
 
   if (isLoading) {
     return <div className="loading loading-spinner"></div>;
