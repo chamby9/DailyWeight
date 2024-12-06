@@ -1,12 +1,21 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import type { WeightEntry } from '@/types/database.types';
+import { auth } from '@/lib/auth';
 
 export async function POST(request: Request) {
   try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const weightEntry: Omit<WeightEntry, 'id' | 'created_at'> = {
-      user_id: body.user_id,
+      user_id: session.user.id,
       date: body.date,
       weight: body.weight
     };
@@ -35,12 +44,21 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const { data, error } = await supabase
       .from('weights')
       .select('*')
-      .order('date', { ascending: true });
+      .eq('user_id', session.user.id)
+      .order('date', { ascending: false });
 
     if (error) {
       console.error('Error fetching weights:', error);
