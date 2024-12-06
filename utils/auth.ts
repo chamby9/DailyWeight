@@ -1,43 +1,44 @@
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import type { Database } from '@/types/database';
+// utils/auth.ts
+import { supabase } from '@/lib/supabase';
 
-export async function signOut() {
-  const supabase = createClientComponentClient<Database>();
-  
+/**
+ * Flag to track whether the auth state has been checked
+ */
+let authStateChecked = false;
+
+/**
+ * Marks the auth state as checked
+ */
+export const markAuthStateAsChecked = () => {
+  authStateChecked = true;
+};
+
+/**
+ * Returns whether the auth state has been checked
+ */
+export const hasAuthStateBeenChecked = () => {
+  return authStateChecked;
+};
+
+/**
+ * Clears the auth state and local storage
+ */
+export const clearAuthState = () => {
+  localStorage.removeItem('supabase.auth.token');
+  localStorage.removeItem('supabase.auth.expires_at');
+  localStorage.removeItem('supabase.auth.refresh_token');
+  authStateChecked = false;
+};
+
+/**
+ * Signs out the user and clears auth state
+ */
+export const signOut = async () => {
   try {
-    // Sign out from Supabase
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
-    
-    // Clear any cached auth state
-    await supabase.auth.getSession();
-    
-    // Force clear cookies and local storage
-    document.cookie.split(";").forEach((c) => {
-      document.cookie = c
-        .replace(/^ +/, "")
-        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-    });
-    localStorage.clear();
-    
+    await supabase.auth.signOut();
+    clearAuthState();
   } catch (error) {
-    console.error('Error in signOut:', error);
+    console.error('Error signing out:', error);
     throw error;
   }
-}
-
-export async function resetPassword(email: string) {
-  const supabase = createClientComponentClient<Database>();
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${window.location.origin}/auth/callback`,
-  });
-  if (error) throw error;
-}
-
-export async function updatePassword(password: string) {
-  const supabase = createClientComponentClient<Database>();
-  const { error } = await supabase.auth.updateUser({
-    password,
-  });
-  if (error) throw error;
-}
+};

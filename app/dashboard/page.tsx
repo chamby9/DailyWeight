@@ -1,36 +1,30 @@
+// app/dashboard/page.tsx
 'use client';
-import { useState, useEffect } from 'react';
+
+import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
 import WeightEntryModal from '@/components/WeightEntryModal';
 import WeightEntries from '@/components/WeightEntries';
 
 export default function Dashboard() {
   const { user, loading, error } = useAuth();
-  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
-    }
-  }, [loading, user, router]);
-
+  
   if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="spinner"></div>
-      </div>
-    );
+    return <div className="flex justify-center items-center min-h-screen">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+    </div>;
   }
 
   if (error) {
-    return (
-      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-        An error occurred: {error.message}
-      </div>
-    );
+    return <div className="p-4 bg-red-50 text-red-700 rounded">
+      An error occurred. Please try signing in again.
+    </div>;
+  }
+
+  if (!user) {
+    return null; // Middleware will handle redirect
   }
 
   const handleWeightAdded = () => {
@@ -41,12 +35,14 @@ export default function Dashboard() {
     <div className="bg-white shadow rounded-lg p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Welcome!</h2>
-        <button 
-          onClick={() => setIsModalOpen(true)}
-          className="btn btn-primary"
-        >
-          Add Weight
-        </button>
+        <div className="flex gap-4">
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className="btn btn-primary"
+          >
+            Add Weight
+          </button>
+        </div>
       </div>
       
       <p className="text-gray-600 mb-6">
