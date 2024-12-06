@@ -29,16 +29,13 @@ export default function DashboardLayout({
     );
   }
 
+  // Let middleware handle redirects, just show error if there is one
   if (error) {
     return (
       <div className="p-4 bg-red-50 text-red-700 rounded">
         An error occurred. Please try signing in again.
       </div>
     );
-  }
-
-  if (!user) {
-    return null; // Middleware will handle redirect
   }
 
   return (
