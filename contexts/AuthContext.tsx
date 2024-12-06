@@ -1,79 +1,105 @@
+// contexts/AuthContext.tsx
 "use client";
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
+import { markAuthStateAsChecked, hasAuthStateBeenChecked, clearAuthState } from '@/utils/auth';
+import { useRouter, usePathname } from 'next/navigation';
 
 type AuthContextType = {
   user: User | null;
-  session: Session | null;
   loading: boolean;
   error: Error | null;
+  signOut: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
-  session: null,
   loading: true,
   error: null,
+  signOut: async () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!hasAuthStateBeenChecked());
   const [error, setError] = useState<Error | null>(null);
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const signOut = useCallback(async () => {
+    try {
+      await supabase.auth.signOut();
+      clearAuthState();
+      router.push('/auth/login');
+    } catch (error) {
+      console.error('Error signing out:', error);
+      setError(error instanceof Error ? error : new Error('Error signing out'));
+    }
+  }, [router]);
 
   useEffect(() => {
     let mounted = true;
 
-    async function getSession() {
+    const checkSession = async () => {
       try {
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) throw sessionError;
-        
+
         if (mounted) {
-          setSession(session);
-          setUser(session?.user ?? null);
-          setError(null);
+          if (session?.user) {
+            setUser(session.user);
+          } else if (pathname.startsWith('/dashboard')) {
+            router.push('/auth/login');
+          }
+          markAuthStateAsChecked();
         }
       } catch (err) {
         if (mounted) {
-          console.error('Auth error:', err);
-          setError(err instanceof Error ? err : new Error('Authentication error'));
-          setSession(null);
-          setUser(null);
+          console.error('Session check error:', err);
+          setError(err instanceof Error ? err : new Error('Session check failed'));
+          if (pathname.startsWith('/dashboard')) {
+            router.push('/auth/login');
+          }
         }
       } finally {
         if (mounted) {
           setLoading(false);
         }
       }
-    }
+    };
 
-    getSession();
+    checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-      if (mounted) {
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
-        setLoading(false);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mounted) return;
+
+      if (event === 'SIGNED_OUT') {
+        setUser(null);
+        clearAuthState();
+        if (pathname.startsWith('/dashboard')) {
+          router.push('/auth/login');
+        }
+      } else if (session?.user) {
+        setUser(session.user);
+        markAuthStateAsChecked();
       }
+      setLoading(false);
     });
 
     return () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []); // No dependencies to prevent refresh loops
+  }, [pathname, router]);
 
-  // Provide both session and user for more granular control
   const value = {
-    session,
     user,
     loading,
     error,
+    signOut,
   };
 
   return (
