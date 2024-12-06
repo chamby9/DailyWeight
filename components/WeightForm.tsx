@@ -24,15 +24,15 @@ export default function WeightForm({ onWeightAdded }: WeightFormProps) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          user_id: 'temp-user-id', // Will be replaced with actual user ID after auth implementation
           weight: parseFloat(weight),
           date,
         }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to add weight');
+        throw new Error(data.error || 'Failed to add weight');
       }
 
       setWeight('');

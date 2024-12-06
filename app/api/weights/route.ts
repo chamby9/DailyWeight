@@ -1,12 +1,23 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
 import type { WeightEntry } from '@/types/database.types';
 
 export async function POST(request: Request) {
   try {
+    const supabase = createRouteHandlerClient({ cookies });
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (!session) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const weightEntry: Omit<WeightEntry, 'id' | 'created_at'> = {
-      user_id: body.user_id,
+      user_id: session.user.id,
       date: body.date,
       weight: body.weight
     };
@@ -37,10 +48,21 @@ export async function POST(request: Request) {
 
 export async function GET() {
   try {
+    const supabase = createRouteHandlerClient({ cookies });
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (!session) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const { data, error } = await supabase
       .from('weights')
       .select('*')
-      .order('date', { ascending: true });
+      .eq('user_id', session.user.id)
+      .order('date', { ascending: false });
 
     if (error) {
       console.error('Error fetching weights:', error);
