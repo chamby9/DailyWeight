@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
 import type { AuthError } from '@supabase/supabase-js';
 
@@ -13,6 +14,13 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const supabase = createClientComponentClient();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      router.replace('/dashboard');
+    }
+  }, [user, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,8 +35,7 @@ export default function Login() {
 
       if (authError) throw authError;
       
-      // Let middleware handle the redirect
-      router.refresh();
+      router.replace('/dashboard');
     } catch (error) {
       const authError = error as AuthError;
       setError(authError.message);
