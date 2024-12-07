@@ -6,6 +6,15 @@ export interface WeightEntry {
   weight: number;
 }
 
+export interface WeightStatistics {
+  id: string;
+  user_id: string;
+  entry_date: string;
+  weight_change: number | null;
+  rolling_average: number | null;
+  created_at: string;
+}
+
 export type Json =
   | string
   | number
@@ -21,6 +30,11 @@ export interface Database {
         Row: WeightEntry
         Insert: Omit<WeightEntry, 'id' | 'created_at'>
         Update: Partial<Omit<WeightEntry, 'id' | 'created_at'>>
+      }
+      weight_statistics: {
+        Row: WeightStatistics
+        Insert: Omit<WeightStatistics, 'id' | 'created_at'>
+        Update: Partial<Omit<WeightStatistics, 'id' | 'created_at'>>
       }
     }
   }
