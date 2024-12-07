@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
+import { useEffect, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -11,9 +11,10 @@ import {
   Title,
   Tooltip,
   Legend,
-  ChartOptions,
+  ChartData as ChartJSData,
 } from 'chart.js';
 
+// Register ChartJS components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -24,76 +25,107 @@ ChartJS.register(
   Legend
 );
 
-export interface WeightChartRef {
-  fetchWeights: () => Promise<void>;
+interface WeightChartData {
+  date: string;
+  weight: number;
+  rolling_average: number | null;
 }
 
-const WeightChart = forwardRef<WeightChartRef>((props, ref) => {
-  const [weights, setWeights] = useState<{ date: string; weight: number }[]>([]);
+// Add interfaces for API responses
+interface WeightEntry {
+  date: string;
+  weight: number;
+}
+
+interface StatEntry {
+  entry_date: string;
+  rolling_average: number;
+}
+
+export default function WeightChart() {
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  const fetchWeights = async () => {
-    try {
-      const response = await fetch('/api/weights');
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch weights');
-      }
-      const data = await response.json();
-      setWeights(data);
-      setError('');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load weight data');
-      console.error('Error fetching weights:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useImperativeHandle(ref, () => ({
-    fetchWeights
-  }));
+  const [error, setError] = useState<string | null>(null);
+  const [chartData, setChartData] = useState<WeightChartData[]>([]);
 
   useEffect(() => {
-    fetchWeights();
+    const fetchData = async () => {
+      try {
+        // Fetch both weight entries and statistics
+        const [entriesRes, statsRes] = await Promise.all([
+          fetch('/api/weights'),
+          fetch('/api/weights/stats/all') // We'll create this endpoint
+        ]);
+
+        if (!entriesRes.ok || !statsRes.ok) {
+          throw new Error('Failed to fetch data');
+        }
+
+        const entries = await entriesRes.json() as WeightEntry[];
+        const stats = await statsRes.json() as StatEntry[];
+
+        // Combine and sort the data
+        const combinedData = entries.map((entry: WeightEntry) => ({
+          date: entry.date,
+          weight: entry.weight,
+          rolling_average: stats.find((stat: StatEntry) => 
+            stat.entry_date === entry.date
+          )?.rolling_average || null
+        })).sort((a: WeightChartData, b: WeightChartData) => 
+          new Date(a.date).getTime() - new Date(b.date).getTime()
+        );
+
+        setChartData(combinedData);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load chart data');
+        console.error('Error fetching chart data:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
-  if (isLoading) return (
-    <div className="flex justify-center items-center h-96">
-      <div className="text-gray-600">Loading...</div>
-    </div>
-  );
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="loading loading-spinner"></div>
+      </div>
+    );
+  }
 
-  if (error) return (
-    <div className="flex justify-center items-center h-96">
-      <div className="text-red-500">{error}</div>
-    </div>
-  );
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-64 text-error">
+        {error}
+      </div>
+    );
+  }
 
-  if (weights.length === 0) return (
-    <div className="flex justify-center items-center h-96">
-      <div className="text-gray-600">No weight entries yet</div>
-    </div>
-  );
-
-  const data = {
-    labels: weights.map(entry => new Date(entry.date).toLocaleDateString()),
+  const data: ChartJSData<'line'> = {
+    labels: chartData.map(d => new Date(d.date).toLocaleDateString()),
     datasets: [
       {
-        label: 'Weight (kg)',
-        data: weights.map(entry => entry.weight),
-        borderColor: 'rgb(59, 130, 246)',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        borderWidth: 2,
-        tension: 0.1,
+        label: 'Weight',
+        data: chartData.map(d => d.weight),
+        borderColor: 'rgb(59, 130, 246)', // Blue
+        backgroundColor: 'rgba(59, 130, 246, 0.5)',
         pointRadius: 4,
-        pointHoverRadius: 6,
+        tension: 0.1,
       },
-    ],
+      {
+        label: '7-Day Average',
+        data: chartData.map(d => d.rolling_average),
+        borderColor: 'rgb(34, 197, 94)', // Green
+        backgroundColor: 'rgba(34, 197, 94, 0.5)',
+        pointRadius: 0,
+        borderDash: [5, 5],
+        tension: 0.4,
+      }
+    ]
   };
 
-  const options: ChartOptions<'line'> = {
+  const options = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -102,36 +134,28 @@ const WeightChart = forwardRef<WeightChartRef>((props, ref) => {
       },
       title: {
         display: true,
-        text: 'Weight History',
-      },
+        text: 'Weight Progress'
+      }
     },
     scales: {
       y: {
-        type: 'linear' as const,
-        beginAtZero: false,
-        ticks: {
-          callback: function(value) {
-            return `${value} kg`;
-          }
+        title: {
+          display: true,
+          text: 'Weight (kg)'
         }
       },
       x: {
-        type: 'category' as const,
-        ticks: {
-          maxRotation: 45,
-          minRotation: 45
+        title: {
+          display: true,
+          text: 'Date'
         }
       }
-    },
+    }
   };
 
   return (
-    <div className="h-96 w-full">
-      <Line options={options} data={data} />
+    <div className="h-64">
+      <Line data={data} options={options} />
     </div>
   );
-});
-
-WeightChart.displayName = 'WeightChart';
-
-export default WeightChart;
+}

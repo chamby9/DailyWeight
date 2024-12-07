@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import WeightEntryModal from '@/components/WeightEntryModal';
 import WeightEntries from '@/components/WeightEntries';
+import WeightChart from '@/components/WeightChart';
 
 export default function Dashboard() {
   const { user, signOut } = useAuth();
@@ -52,11 +53,9 @@ export default function Dashboard() {
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div className="bg-blue-50 p-6 rounded-lg">
-              <h3 className="text-lg font-semibold mb-2">Quick Stats</h3>
-              <div className="text-gray-600">
-                Start tracking your weight to see your progress here.
-              </div>
+            <div className="bg-white p-6 rounded-lg">
+              <h3 className="text-lg font-semibold mb-4">Weight Progress</h3>
+              <WeightChart />
             </div>
             
             <div className="bg-green-50 p-6 rounded-lg">
