@@ -4,6 +4,9 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
+import { signOut as authSignOut } from '@/utils/auth';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { clearAuthState } from '@/utils/auth';
 
 interface AuthContextType {
   user: User | null;
@@ -32,8 +35,16 @@ export function AuthProvider({
   }, []);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
+    try {
+      const supabase = createClientComponentClient();
+      await supabase.auth.signOut();
+      clearAuthState();
+      setUser(null);
+      window.location.href = '/auth/login';
+    } catch (error) {
+      console.error('Error signing out:', error);
+      throw error;
+    }
   };
 
   return (

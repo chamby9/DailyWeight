@@ -24,9 +24,12 @@ export const hasAuthStateBeenChecked = () => {
  * Clears the auth state and local storage
  */
 export const clearAuthState = () => {
-  localStorage.removeItem('supabase.auth.token');
-  localStorage.removeItem('supabase.auth.expires_at');
-  localStorage.removeItem('supabase.auth.refresh_token');
+  // Clear all Supabase-related items from localStorage
+  Object.keys(localStorage).forEach(key => {
+    if (key.startsWith('supabase.auth.')) {
+      localStorage.removeItem(key);
+    }
+  });
   authStateChecked = false;
 };
 

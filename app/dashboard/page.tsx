@@ -10,6 +10,15 @@ export default function Dashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
+  const handleSignOut = async () => {
+    try {
+      console.log('Starting sign out...');
+      await signOut();
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
   const handleWeightAdded = () => {
     setIsModalOpen(false);
     setRefreshTrigger(prev => prev + 1);
@@ -20,7 +29,7 @@ export default function Dashboard() {
       <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         <div className="flex justify-end mb-6">
           <button 
-            onClick={signOut}
+            onClick={handleSignOut}
             className="btn btn-outline"
           >
             Sign Out
