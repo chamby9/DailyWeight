@@ -14,10 +14,16 @@ export async function GET() {
       );
     }
 
+    // Get today's date in YYYY-MM-DD format
+    const today = new Date().toISOString().split('T')[0];
+
+    // Get most recent active stats
     const { data, error } = await supabase
       .from('weight_statistics')
-      .select('weight_change, rolling_average')
+      .select('weight_change, rolling_average, entry_date')
       .eq('user_id', session.user.id)
+      .eq('active', true)
+      .lte('entry_date', today)
       .order('entry_date', { ascending: false })
       .limit(1)
       .single();

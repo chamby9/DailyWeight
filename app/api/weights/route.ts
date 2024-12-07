@@ -1,6 +1,53 @@
 import { NextResponse } from 'next/server';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
+import { SupabaseClient } from '@supabase/supabase-js';
+
+const validateWeightEntry = async (
+  supabase: SupabaseClient,
+  userId: string,
+  weight: number,
+  date: string
+) => {
+  // Check for future dates
+  if (new Date(date) > new Date()) {
+    throw new Error('Cannot add weight entries for future dates');
+  }
+
+  // Validate weight range
+  if (weight < 20 || weight > 500) {
+    throw new Error('Weight must be between 20kg and 500kg');
+  }
+
+  // Check for duplicate entries on the same date
+  const { data: existingEntry } = await supabase
+    .from('weights')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('date', date)
+    .single();
+
+  if (existingEntry) {
+    throw new Error('An entry already exists for this date');
+  }
+
+  // Check for extreme weight changes (e.g., more than 5% change per day)
+  const { data: lastEntry } = await supabase
+    .from('weights')
+    .select('weight')
+    .eq('user_id', userId)
+    .lt('date', date)
+    .order('date', { ascending: false })
+    .limit(1)
+    .single();
+
+  if (lastEntry) {
+    const percentChange = Math.abs((weight - lastEntry.weight) / lastEntry.weight * 100);
+    if (percentChange > 5) {
+      throw new Error('Weight change exceeds 5% from last entry. Please verify the entry.');
+    }
+  }
+};
 
 export async function POST(request: Request) {
   try {
@@ -10,9 +57,8 @@ export async function POST(request: Request) {
     const { data: { session } } = await supabase.auth.getSession();
 
     if (!session) {
-      console.log('❌ No session found - unauthorized');
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Please log in to add weight entries' },
         { status: 401 }
       );
     }
@@ -22,6 +68,23 @@ export async function POST(request: Request) {
     const newWeight = body.weight;
     const entryDate = body.date;
 
+    try {
+      await validateWeightEntry(supabase, userId, newWeight, entryDate);
+    } catch (validationError) {
+      // Type check the error
+      if (validationError instanceof Error) {
+        return NextResponse.json(
+          { error: validationError.message },
+          { status: 400 }
+        );
+      }
+      // Fallback error message
+      return NextResponse.json(
+        { error: 'Validation failed' },
+        { status: 400 }
+      );
+    }
+
     console.log('📥 New entry details:', {
       userId,
       newWeight,
@@ -29,6 +92,8 @@ export async function POST(request: Request) {
     });
 
     // Start a transaction
+    await validateWeightEntry(supabase, userId, newWeight, entryDate);
+
     const { data: weightEntry, error: weightError } = await supabase
       .from('weights')
       .insert([{
@@ -133,7 +198,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('❌ Unexpected error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Something went wrong. Please try again later.' },
       { status: 500 }
     );
   }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import WeightEntryModal from '@/components/WeightEntryModal';
 import WeightEntries from '@/components/WeightEntries';
@@ -9,7 +9,7 @@ import WeightChart from '@/components/WeightChart';
 export default function Dashboard() {
   const { user, signOut } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const handleSignOut = async () => {
     try {
@@ -20,10 +20,14 @@ export default function Dashboard() {
     }
   };
 
-  const handleWeightAdded = () => {
+  const handleWeightAdded = useCallback(() => {
     setIsModalOpen(false);
-    setRefreshTrigger(prev => prev + 1);
-  };
+    setRefreshKey(prev => prev + 1);
+  }, []);
+
+  const handleDataChange = useCallback(() => {
+    setRefreshKey(prev => prev + 1);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -55,12 +59,12 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div className="bg-white p-6 rounded-lg">
               <h3 className="text-lg font-semibold mb-4">Weight Progress</h3>
-              <WeightChart />
+              <WeightChart key={`chart-${refreshKey}`} />
             </div>
             
             <div className="bg-green-50 p-6 rounded-lg">
               <h3 className="text-lg font-semibold mb-2">Recent Entries</h3>
-              <WeightEntries key={refreshTrigger} />
+              <WeightEntries onDataChange={handleDataChange} />
             </div>
           </div>
 
