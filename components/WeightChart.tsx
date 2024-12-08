@@ -94,6 +94,7 @@ export default function WeightChart() {
 
   const options: ChartOptions<'line'> = {
     responsive: true,
+    maintainAspectRatio: false,
     interaction: {
       intersect: false,
       mode: 'index'
@@ -103,7 +104,12 @@ export default function WeightChart() {
         position: 'top' as const,
         labels: {
           usePointStyle: true,
-          pointStyle: 'circle'
+          pointStyle: 'circle',
+          boxWidth: 6,
+          padding: 10,
+          font: {
+            size: 11
+          }
         }
       },
       tooltip: {
@@ -112,8 +118,14 @@ export default function WeightChart() {
         bodyColor: '#666',
         borderColor: '#ddd',
         borderWidth: 1,
-        padding: 10,
-        boxPadding: 4
+        padding: 8,
+        boxPadding: 3,
+        titleFont: {
+          size: 12
+        },
+        bodyFont: {
+          size: 11
+        }
       }
     },
     scales: {
@@ -122,17 +134,29 @@ export default function WeightChart() {
         time: {
           unit: 'day',
           displayFormats: {
-            day: 'dd/MM/yy'
+            day: 'dd/MM'
           }
         },
         grid: {
           display: false
+        },
+        ticks: {
+          maxRotation: 45,
+          font: {
+            size: 10
+          },
+          maxTicksLimit: 8
         }
       },
       y: {
         beginAtZero: false,
         grid: {
           color: 'rgba(0, 0, 0, 0.05)'
+        },
+        ticks: {
+          font: {
+            size: 10
+          }
         }
       }
     }
@@ -166,9 +190,11 @@ export default function WeightChart() {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm">
+    <div className="bg-white p-4 rounded-lg shadow-sm">
       <h2 className="text-lg font-semibold mb-4">Weight Progress</h2>
-      <Line options={options} data={data} />
+      <div className="h-[300px] md:h-[400px]">
+        <Line options={options} data={data} />
+      </div>
     </div>
   );
 }
