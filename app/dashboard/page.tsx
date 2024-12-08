@@ -8,6 +8,7 @@ import WeightChart from '@/components/WeightChart';
 import MobileMenu from '@/components/MobileMenu';
 import Link from 'next/link';
 import WeightGoal from '@/components/WeightGoal';
+import InsightCard from '@/components/InsightCard';
 
 export default function Dashboard() {
   const { user, signOut, isLoading } = useAuth();
@@ -79,6 +80,10 @@ export default function Dashboard() {
           <MobileMenu onSignOut={handleSignOut} />
         </div>
         
+        <div className="mb-6">
+          <InsightCard />
+        </div>
+
         <div className="bg-white shadow rounded-lg p-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold">Welcome!</h2>
