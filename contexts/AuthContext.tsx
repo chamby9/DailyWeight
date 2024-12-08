@@ -11,6 +11,7 @@ import { clearAuthState } from '@/utils/auth';
 interface AuthContextType {
   user: User | null;
   signOut: () => Promise<void>;
+  isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,10 +24,16 @@ export function AuthProvider({
   initialSession: Session | null;
 }) {
   const [user, setUser] = useState<User | null>(initialSession?.user || null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user || null);
+      if (event === 'SIGNED_OUT') {
+        setUser(null);
+      } else if (session?.user) {
+        setUser(session.user);
+      }
+      setIsLoading(false);
     });
 
     return () => {
@@ -48,7 +55,7 @@ export function AuthProvider({
   };
 
   return (
-    <AuthContext.Provider value={{ user, signOut }}>
+    <AuthContext.Provider value={{ user, signOut, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

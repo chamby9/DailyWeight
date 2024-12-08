@@ -5,9 +5,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import WeightEntryModal from '@/components/WeightEntryModal';
 import WeightEntries from '@/components/WeightEntries';
 import WeightChart from '@/components/WeightChart';
+import MobileMenu from '@/components/MobileMenu';
+import Link from 'next/link';
 
 export default function Dashboard() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, isLoading } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -29,16 +31,32 @@ export default function Dashboard() {
     setRefreshKey(prev => prev + 1);
   }, []);
 
+  if (isLoading) {
+    return <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="loading loading-spinner loading-lg"></div>
+    </div>;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-end mb-6">
-          <button 
-            onClick={handleSignOut}
-            className="btn btn-outline"
-          >
-            Sign Out
-          </button>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold">Welcome!</h2>
+          <div className="hidden md:flex space-x-2">
+            <Link 
+              href="/account"
+              className="btn btn-ghost"
+            >
+              Account Settings
+            </Link>
+            <button 
+              onClick={handleSignOut}
+              className="btn btn-outline"
+            >
+              Sign Out
+            </button>
+          </div>
+          <MobileMenu onSignOut={handleSignOut} />
         </div>
         
         <div className="bg-white shadow rounded-lg p-6">
