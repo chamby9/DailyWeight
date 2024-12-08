@@ -11,8 +11,11 @@ import {
   Title,
   Tooltip,
   Legend,
-  ChartData as ChartJSData,
+  Filler,
+  TimeScale,
+  ChartOptions
 } from 'chart.js';
+import 'chartjs-adapter-date-fns';
 
 // Register ChartJS components
 ChartJS.register(
@@ -22,7 +25,9 @@ ChartJS.register(
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  Filler,
+  TimeScale
 );
 
 interface WeightChartData {
@@ -50,7 +55,6 @@ export default function WeightChart() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch both weight entries and statistics
         const [entriesRes, statsRes] = await Promise.all([
           fetch('/api/weights/chart'),
           fetch('/api/weights/stats/all')
@@ -63,7 +67,6 @@ export default function WeightChart() {
         const entries = await entriesRes.json() as WeightEntry[];
         const stats = await statsRes.json() as StatEntry[];
 
-        // Combine and sort the data
         const combinedData = entries.map((entry: WeightEntry) => ({
           date: entry.date,
           weight: entry.weight,
@@ -86,76 +89,86 @@ export default function WeightChart() {
     fetchData();
   }, []);
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="loading loading-spinner"></div>
-      </div>
-    );
-  }
+  if (isLoading) return <div className="loading loading-spinner"></div>;
+  if (error) return <div className="text-error">{error}</div>;
 
-  if (error) {
-    return (
-      <div className="flex justify-center items-center h-64 text-error">
-        {error}
-      </div>
-    );
-  }
-
-  const data: ChartJSData<'line'> = {
-    labels: chartData.map(d => new Date(d.date).toLocaleDateString()),
-    datasets: [
-      {
-        label: 'Weight',
-        data: chartData.map(d => d.weight),
-        borderColor: 'rgb(59, 130, 246)', // Blue
-        backgroundColor: 'rgba(59, 130, 246, 0.5)',
-        pointRadius: 4,
-        tension: 0.1,
-      },
-      {
-        label: '7-Day Average',
-        data: chartData.map(d => d.rolling_average),
-        borderColor: 'rgb(34, 197, 94)', // Green
-        backgroundColor: 'rgba(34, 197, 94, 0.5)',
-        pointRadius: 0,
-        borderDash: [5, 5],
-        tension: 0.4,
-      }
-    ]
-  };
-
-  const options = {
+  const options: ChartOptions<'line'> = {
     responsive: true,
-    maintainAspectRatio: false,
+    interaction: {
+      intersect: false,
+      mode: 'index'
+    },
     plugins: {
       legend: {
         position: 'top' as const,
+        labels: {
+          usePointStyle: true,
+          pointStyle: 'circle'
+        }
       },
-      title: {
-        display: true,
-        text: 'Weight Progress'
+      tooltip: {
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        titleColor: '#666',
+        bodyColor: '#666',
+        borderColor: '#ddd',
+        borderWidth: 1,
+        padding: 10,
+        boxPadding: 4
       }
     },
     scales: {
-      y: {
-        title: {
-          display: true,
-          text: 'Weight (kg)'
+      x: {
+        type: 'time',
+        time: {
+          unit: 'day',
+          displayFormats: {
+            day: 'dd/MM/yy'
+          }
+        },
+        grid: {
+          display: false
         }
       },
-      x: {
-        title: {
-          display: true,
-          text: 'Date'
+      y: {
+        beginAtZero: false,
+        grid: {
+          color: 'rgba(0, 0, 0, 0.05)'
         }
       }
     }
   };
 
+  const data = {
+    labels: chartData.map(d => d.date),
+    datasets: [
+      {
+        label: 'Weight',
+        data: chartData.map(d => d.weight),
+        borderColor: 'rgb(99, 102, 241)',
+        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+        borderWidth: 2,
+        pointRadius: 3,
+        pointBackgroundColor: 'rgb(99, 102, 241)',
+        fill: true,
+        tension: 0.2,
+      },
+      {
+        label: '7-Day Average',
+        data: chartData.map(d => d.rolling_average),
+        borderColor: 'rgb(34, 197, 94)',
+        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+        borderWidth: 2,
+        pointRadius: 0,
+        fill: '-1', // Fill to the previous dataset
+        tension: 0.4,
+      }
+    ]
+  };
+
   return (
-    <div className="h-64">
-      <Line data={data} options={options} />
+    <div className="bg-white p-6 rounded-lg shadow-sm">
+      <h2 className="text-lg font-semibold mb-4">Weight Progress</h2>
+      <Line options={options} data={data} />
     </div>
   );
 }
