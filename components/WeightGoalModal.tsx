@@ -115,7 +115,7 @@ export default function WeightGoalModal({ currentGoal, onClose, onGoalUpdated }:
             </button>
             <button
               type="submit"
-              className="btn btn-primary"
+              className="btn btn-primary text-white"
               disabled={isLoading}
             >
               {isLoading ? 'Saving...' : 'Save Goal'}

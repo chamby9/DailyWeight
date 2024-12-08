@@ -11,33 +11,23 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-export function ThemeProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('weightLight');
 
   useEffect(() => {
-    // Check for saved theme preference
+    // Get initial theme from localStorage or system preference
     const savedTheme = localStorage.getItem('theme') as Theme;
     if (savedTheme) {
       setTheme(savedTheme);
       document.documentElement.setAttribute('data-theme', savedTheme);
-    } else {
-      // Check system preference
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const defaultTheme = prefersDark ? 'weightDark' : 'weightLight';
-      setTheme(defaultTheme);
-      document.documentElement.setAttribute('data-theme', defaultTheme);
     }
   }, []);
 
   const toggleTheme = () => {
     const newTheme = theme === 'weightLight' ? 'weightDark' : 'weightLight';
     setTheme(newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme);
     localStorage.setItem('theme', newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
   };
 
   return (
@@ -53,4 +43,4 @@ export function useTheme() {
     throw new Error('useTheme must be used within a ThemeProvider');
   }
   return context;
-}
+} 

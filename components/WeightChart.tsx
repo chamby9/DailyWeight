@@ -58,6 +58,18 @@ export default function WeightChart({ goalWeight, targetDate }: WeightChartProps
   const [chartData, setChartData] = useState<WeightChartData[]>([]);
 
   useEffect(() => {
+    console.log('Chart Props:', { 
+      goalWeight, 
+      targetDate, 
+      chartDataLength: chartData.length,
+      firstDate: chartData[0]?.date,
+      lastDate: chartData[chartData.length - 1]?.date,
+      yMin: goalWeight ? Math.min(goalWeight - 1, Math.min(...chartData.map(d => d.weight)) - 1) : undefined,
+      yMax: Math.max(...chartData.map(d => d.weight)) + 1
+    });
+  }, [goalWeight, targetDate, chartData]);
+
+  useEffect(() => {
     const fetchData = async () => {
       try {
         const [entriesRes, statsRes] = await Promise.all([
@@ -145,7 +157,7 @@ export default function WeightChart({ goalWeight, targetDate }: WeightChartProps
         grid: {
           display: false
         },
-        min: undefined,
+        min: chartData[0]?.date ? new Date(chartData[0].date).getTime() : undefined,
         max: targetDate ? new Date(targetDate).getTime() : undefined,
         ticks: {
           maxRotation: 45,
@@ -157,7 +169,7 @@ export default function WeightChart({ goalWeight, targetDate }: WeightChartProps
       },
       y: {
         beginAtZero: false,
-        min: goalWeight ? Math.min(goalWeight, Math.min(...chartData.map(d => d.weight))) - 1 : undefined,
+        min: goalWeight ? Math.min(goalWeight - 1, Math.min(...chartData.map(d => d.weight)) - 1) : undefined,
         max: Math.max(...chartData.map(d => d.weight)) + 1,
         grid: {
           color: 'rgba(0, 0, 0, 0.05)'

@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google';
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -24,7 +25,9 @@ export default async function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <AuthProvider initialSession={session}>
-          {children}
+          <ThemeProvider>
+            {children}
+          </ThemeProvider>
         </AuthProvider>
       </body>
     </html>
