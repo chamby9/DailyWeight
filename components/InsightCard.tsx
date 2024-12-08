@@ -16,7 +16,14 @@ export default function InsightCard() {
       setIsLoading(true);
       setError(null);
       const response = await fetch('/api/insights');
-      if (!response.ok) throw new Error('Failed to fetch insight');
+      if (!response.ok) {
+        const data = await response.json();
+        if (response.status === 400 && data.error === 'No weight entry for today') {
+          setInsightData(null);
+          return;
+        }
+        throw new Error('Failed to fetch insight');
+      }
       const data = await response.json();
       setInsightData(data);
     } catch (err) {
@@ -40,21 +47,30 @@ export default function InsightCard() {
         </div>
         <div className="flex items-center gap-2">
           {insightData && (
-            <span className="text-sm text-gray-500">
-              {new Date(insightData.generated_at).toLocaleTimeString([], { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-              })}
-            </span>
+            <>
+              <span className="text-sm text-gray-500">
+                {new Date(insightData.generated_at).toLocaleString([], { 
+                  hour: '2-digit', 
+                  minute: '2-digit',
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: '2-digit'
+                })}
+              </span>
+              {/* Only show refresh button if no insight for today */}
+              {new Date(insightData.generated_at).toISOString().split('T')[0] !== 
+               new Date().toISOString().split('T')[0] && (
+                <button 
+                  onClick={fetchInsight}
+                  disabled={isLoading}
+                  className="btn btn-ghost btn-sm"
+                  aria-label="Refresh insight"
+                >
+                  <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                </button>
+              )}
+            </>
           )}
-          <button 
-            onClick={fetchInsight}
-            disabled={isLoading}
-            className="btn btn-ghost btn-sm"
-            aria-label="Refresh insight"
-          >
-            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-          </button>
         </div>
       </div>
 
@@ -67,7 +83,9 @@ export default function InsightCard() {
           <p className="text-red-600 text-sm">{error}</p>
         ) : insightData?.insight ? (
           <p className="text-gray-700 leading-relaxed">{insightData.insight}</p>
-        ) : null}
+        ) : (
+          <p className="text-gray-500 text-center">Add today&apos;s weight to get an AI insight</p>
+        )}
       </div>
     </div>
   );

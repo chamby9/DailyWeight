@@ -59,6 +59,10 @@ export default function WeightForm({ onWeightAdded }: WeightFormProps) {
 
       setWeight('');
       setDate(new Date().toISOString().split('T')[0]);
+      
+      // Trigger insight generation
+      await fetch('/api/insights');
+      
       onWeightAdded();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to add weight entry');
