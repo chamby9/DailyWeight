@@ -62,7 +62,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">Welcome!</h2>
+          <h2 className="text-2xl font-bold">DailyWeight</h2>
           <div className="hidden md:flex space-x-2">
             <Link 
               href="/account"
@@ -86,7 +86,9 @@ export default function Dashboard() {
 
         <div className="bg-white shadow rounded-lg p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold">Welcome!</h2>
+            <h2 className="text-2xl font-bold">
+              Welcome, {user?.user_metadata?.name || user?.email?.split('@')[0]}!
+            </h2>
             <button 
               onClick={() => setIsModalOpen(true)}
               className="btn btn-primary"
@@ -94,11 +96,6 @@ export default function Dashboard() {
               Add Weight
             </button>
           </div>
-          
-          <p className="text-gray-600 mb-6">
-            You are signed in as {user?.email}
-          </p>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div className="space-y-6">
               <WeightGoal />

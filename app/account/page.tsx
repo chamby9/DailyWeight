@@ -2,40 +2,48 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
 export default function AccountSettings() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const supabase = createClientComponentClient();
 
   useEffect(() => {
     if (user?.email) {
       setEmail(user.email);
+      setName(user.user_metadata?.name || '');
     }
   }, [user]);
 
-  const handleUpdateEmail = async (e: React.FormEvent) => {
+  const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setMessage(null);
 
     try {
-      const { error } = await supabase.auth.updateUser({ email });
+      const { error } = await supabase.auth.updateUser({
+        data: { name }
+      });
 
       if (error) throw error;
 
+      await refreshUser();
+
       setMessage({
         type: 'success',
-        text: 'Email update initiated. Please check your new email for confirmation.'
+        text: 'Profile updated successfully.'
       });
     } catch (error) {
+      console.error('Error updating profile:', error);
       setMessage({
         type: 'error',
-        text: error instanceof Error ? error.message : 'Failed to update email'
+        text: error instanceof Error ? error.message : 'Failed to update profile'
       });
     } finally {
       setIsLoading(false);
@@ -92,7 +100,22 @@ export default function AccountSettings() {
               </div>
             )}
 
-            <form onSubmit={handleUpdateEmail} className="space-y-4">
+            <form onSubmit={handleUpdateProfile} className="space-y-4">
+              <div>
+                <label htmlFor="name" className="label">
+                  <span className="label-text">Name</span>
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="input input-bordered w-full"
+                  disabled={isLoading}
+                  placeholder="Your name"
+                />
+              </div>
+
               <div>
                 <label htmlFor="email" className="label">
                   <span className="label-text">Email Address</span>
@@ -112,7 +135,7 @@ export default function AccountSettings() {
                 className="btn btn-primary w-full sm:w-auto"
                 disabled={isLoading}
               >
-                {isLoading ? 'Updating...' : 'Update Email'}
+                {isLoading ? 'Updating...' : 'Update Profile'}
               </button>
             </form>
 
