@@ -1,15 +1,19 @@
 'use client';
 
-import { useTheme } from './ThemeProvider';
-import { Sun, Moon } from 'lucide-react';
+import { useTheme } from '@/contexts/ThemeContext';
+import { Moon, Sun } from 'lucide-react';
 
-export function ThemeSwitcher() {
+interface ThemeSwitcherProps {
+  className?: string;
+}
+
+export default function ThemeSwitcher({ className }: ThemeSwitcherProps) {
   const { theme, toggleTheme } = useTheme();
 
   return (
     <button
       onClick={toggleTheme}
-      className="btn btn-ghost btn-circle"
+      className={`btn btn-ghost btn-circle ${className || ''}`}
       aria-label="Toggle theme"
     >
       {theme === 'weightLight' ? (
@@ -19,4 +23,4 @@ export function ThemeSwitcher() {
       )}
     </button>
   );
-}
+} 

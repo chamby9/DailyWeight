@@ -73,59 +73,45 @@ export default function WeightForm({ onWeightAdded }: WeightFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="form-control w-full">
-        <label className="label">
-          <span className="label-text">Date</span>
+      <div>
+        <label className="text-base-content">
+          Date
         </label>
         <input
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
+          className="input input-bordered w-full bg-base-100 text-base-content"
           max={new Date().toISOString().split('T')[0]}
-          className="input input-bordered w-full"
           required
         />
       </div>
 
-      <div className="form-control w-full">
-        <label className="label">
-          <span className="label-text">Weight (kg)</span>
+      <div>
+        <label className="text-base-content">
+          Weight (kg)
         </label>
         <input
           type="number"
           value={weight}
           onChange={(e) => setWeight(e.target.value)}
-          step="0.1"
-          min="20"
-          max="500"
-          className="input input-bordered w-full"
           placeholder="Enter weight"
+          className="input input-bordered w-full bg-base-100 text-base-content placeholder:text-base-content/50"
+          step="0.1"
           required
         />
       </div>
 
-      {error && (
-        <div className="alert alert-error">
-          <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <span>{error}</span>
-        </div>
-      )}
+      {error && <div className="text-error text-sm">{error}</div>}
 
       <button
         type="submit"
+        className="btn btn-primary w-full text-white"
         disabled={isLoading}
-        className="btn btn-primary w-full"
       >
         {isLoading ? (
-          <>
-            <span className="loading loading-spinner"></span>
-            Adding...
-          </>
-        ) : (
-          'Add Weight'
-        )}
+          <span className="loading loading-spinner loading-sm"></span>
+        ) : 'Add Weight'}
       </button>
     </form>
   );
