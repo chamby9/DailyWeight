@@ -7,6 +7,7 @@ import WeightEntries from '@/components/WeightEntries';
 import WeightChart from '@/components/WeightChart';
 import MobileMenu from '@/components/MobileMenu';
 import Link from 'next/link';
+import WeightGoal from '@/components/WeightGoal';
 
 export default function Dashboard() {
   const { user, signOut, isLoading } = useAuth();
@@ -75,9 +76,12 @@ export default function Dashboard() {
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div className="bg-white p-6 rounded-lg">
-              <h3 className="text-lg font-semibold mb-4">Weight Progress</h3>
-              <WeightChart key={`chart-${refreshKey}`} />
+            <div className="space-y-6">
+              <WeightGoal />
+              <div className="bg-white p-6 rounded-lg">
+                <h3 className="text-lg font-semibold mb-4">Weight Progress</h3>
+                <WeightChart key={`chart-${refreshKey}`} />
+              </div>
             </div>
             
             <div className="bg-green-50 p-6 rounded-lg">
