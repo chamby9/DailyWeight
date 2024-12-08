@@ -12,6 +12,7 @@ interface AuthContextType {
   user: User | null;
   signOut: () => Promise<void>;
   isLoading: boolean;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -54,8 +55,14 @@ export function AuthProvider({
     }
   };
 
+  const refreshUser = async () => {
+    const supabase = createClientComponentClient();
+    const { data: { user: freshUser } } = await supabase.auth.getUser();
+    setUser(freshUser);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, signOut, isLoading }}>
+    <AuthContext.Provider value={{ user, signOut, isLoading, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

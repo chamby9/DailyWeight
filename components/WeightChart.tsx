@@ -186,7 +186,7 @@ export default function WeightChart({ goalWeight, targetDate }: WeightChartProps
           index === 0 || index === chartData.length - 1 ? 3 : 0
         ),
         fill: true,
-        tension: 0.2,
+        tension: 0.6,
       },
       {
         label: '7-Day Average',
