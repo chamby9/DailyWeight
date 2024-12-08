@@ -220,7 +220,8 @@ export async function GET() {
       .from('weights')
       .select('*')
       .eq('user_id', session.user.id)
-      .order('date', { ascending: false });
+      .order('date', { ascending: false })
+      .limit(7);
 
     if (error) {
       console.error('Error fetching weights:', error);

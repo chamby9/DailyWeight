@@ -52,8 +52,8 @@ export default function WeightChart() {
       try {
         // Fetch both weight entries and statistics
         const [entriesRes, statsRes] = await Promise.all([
-          fetch('/api/weights'),
-          fetch('/api/weights/stats/all') // We'll create this endpoint
+          fetch('/api/weights/chart'),
+          fetch('/api/weights/stats/all')
         ]);
 
         if (!entriesRes.ok || !statsRes.ok) {
