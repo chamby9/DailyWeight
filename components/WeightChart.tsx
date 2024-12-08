@@ -47,7 +47,12 @@ interface StatEntry {
   rolling_average: number;
 }
 
-export default function WeightChart() {
+interface WeightChartProps {
+  goalWeight?: number | null;
+  targetDate?: string | null;
+}
+
+export default function WeightChart({ goalWeight, targetDate }: WeightChartProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [chartData, setChartData] = useState<WeightChartData[]>([]);
@@ -140,6 +145,8 @@ export default function WeightChart() {
         grid: {
           display: false
         },
+        min: undefined,
+        max: targetDate ? new Date(targetDate).getTime() : undefined,
         ticks: {
           maxRotation: 45,
           font: {
@@ -150,6 +157,8 @@ export default function WeightChart() {
       },
       y: {
         beginAtZero: false,
+        min: goalWeight ? Math.min(goalWeight, Math.min(...chartData.map(d => d.weight))) - 1 : undefined,
+        max: Math.max(...chartData.map(d => d.weight)) + 1,
         grid: {
           color: 'rgba(0, 0, 0, 0.05)'
         },
@@ -171,8 +180,11 @@ export default function WeightChart() {
         borderColor: 'rgb(99, 102, 241)',
         backgroundColor: 'rgba(99, 102, 241, 0.1)',
         borderWidth: 2,
-        pointRadius: 3,
-        pointBackgroundColor: 'rgb(99, 102, 241)',
+        pointHoverRadius: 4,
+        pointHitRadius: 10,
+        pointRadius: chartData.map((_, index) => 
+          index === 0 || index === chartData.length - 1 ? 3 : 0
+        ),
         fill: true,
         tension: 0.2,
       },
@@ -183,8 +195,8 @@ export default function WeightChart() {
         backgroundColor: 'rgba(34, 197, 94, 0.1)',
         borderWidth: 2,
         pointRadius: 0,
-        fill: '-1', // Fill to the previous dataset
-        tension: 0.4,
+        fill: '-1',
+        tension: 0.2,
       }
     ]
   };
