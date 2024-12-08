@@ -12,13 +12,15 @@
     "@supabase/auth-helpers-nextjs": "^0.8.7",
     "@supabase/supabase-js": "^2.39.3",
     "chart.js": "^4.4.1",
+    "chartjs-adapter-date-fns": "^3.0.0",
     "daisyui": "^4.6.1",
+    "date-fns": "^4.1.0",
+    "encoding": "^0.1.13",
     "lucide-react": "^0.263.1",
     "next": "14.0.4",
     "react": "^18",
     "react-chartjs-2": "^5.2.0",
-    "react-dom": "^18",
-    "encoding": "^0.1.13"
+    "react-dom": "^18"
   },
   "devDependencies": {
     "@types/node": "^20",
